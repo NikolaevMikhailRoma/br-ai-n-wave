@@ -1,32 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider, RadioButtons, Button, TextBox
-from typing import Tuple, Optional
+from typing import Tuple
 from SegReader import SeqReader
 import os
 from config import DATA_DIR
-from matplotlib.image import AxesImage
-
-
-class SegPlot:
-    def __init__(self):
-        self.fig = None
-        self.ax = None
-
-    def plot(self, data: np.ndarray, ax: Optional[plt.Axes] = None, cmap: str = 'seismic',
-             aspect: str = 'auto', vmin: Optional[float] = None, vmax: Optional[float] = None) -> AxesImage:
-        if ax is None:
-            if self.fig is None or self.ax is None:
-                self.fig, self.ax = plt.subplots()
-            ax = self.ax
-
-        if vmin is None:
-            vmin = np.min(data)
-        if vmax is None:
-            vmax = np.max(data)
-
-        im = ax.imshow(data, cmap=cmap, aspect=aspect, vmin=vmin, vmax=vmax)
-        return im
+from SegPlot import SegPlot
 
 class SegInteractPlot:
     def __init__(self, seq_reader, df, stats: dict):
@@ -45,38 +24,38 @@ class SegInteractPlot:
         plt.subplots_adjust(left=0.1, bottom=0.3, right=0.9, top=0.95)
 
         # Setup mode selection
-        rax = plt.axes([0.1, 0.1, 0.13, 0.13])
+        rax = plt.axes((0.1, 0.1, 0.13, 0.13))
         self.radio = RadioButtons(rax, ('inline', 'crossline', 'depth'))
         self.radio.on_clicked(self.mode_changed)
 
         # Setup slider
-        self.slider_ax = plt.axes([0.1, 0.05, 0.8, 0.03])
+        self.slider_ax = plt.axes((0.1, 0.05, 0.8, 0.03))
         vmin, vmax = self.seq_reader.get_dimensions()['INLINE_3D']
         self.slider = Slider(self.slider_ax, 'Slice', vmin, vmax, valinit=vmin, valstep=1)
         self.slider.on_changed(self.update_slice)
 
         # Setup color scale toggle button
-        self.scale_button_ax = plt.axes([0.25, 0.15, 0.15, 0.05])
+        self.scale_button_ax = plt.axes((0.25, 0.15, 0.15, 0.05))
         self.scale_button = Button(self.scale_button_ax, 'Toggle Scale')
         self.scale_button.on_clicked(self.toggle_color_scale)
 
         # Setup color mode toggle button
-        self.color_button_ax = plt.axes([0.45, 0.15, 0.15, 0.05])
+        self.color_button_ax = plt.axes((0.45, 0.15, 0.15, 0.05))
         self.color_button = Button(self.color_button_ax, 'Toggle Color')
         self.color_button.on_clicked(self.toggle_color_mode)
 
         # Setup save button
-        self.save_button_ax = plt.axes([0.65, 0.15, 0.15, 0.05])
+        self.save_button_ax = plt.axes((0.65, 0.15, 0.15, 0.05))
         self.save_button = Button(self.save_button_ax, 'Save Image')
         self.save_button.on_clicked(self.save_image)
 
         # Setup manual slice input
-        self.slice_input_ax = plt.axes([0.25, 0.22, 0.1, 0.05])
+        self.slice_input_ax = plt.axes((0.25, 0.22, 0.1, 0.05))
         self.slice_input = TextBox(self.slice_input_ax, 'Slice:', initial=str(int(vmin)))
         self.slice_input.on_submit(self.manual_slice_update)
 
         # Display slice range
-        self.slice_range_ax = plt.axes([0.45, 0.22, 0.3, 0.05])
+        self.slice_range_ax = plt.axes((0.45, 0.22, 0.3, 0.05))
         self.slice_range_ax.axis('off')
         self.slice_range_text = self.slice_range_ax.text(0, 0, f'Range: {int(vmin)} - {int(vmax)}')
 
