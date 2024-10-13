@@ -1,0 +1,5 @@
+*.npy
+*.sgy
+.venv/
+.idea/
+*__pycache__*
