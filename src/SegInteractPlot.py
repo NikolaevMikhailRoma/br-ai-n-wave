@@ -7,6 +7,7 @@ import os
 from config import DATA_DIR
 from SegPlot import SegPlot
 
+
 class SegInteractPlot:
     def __init__(self, seq_reader, df, stats: dict):
         self.seq_reader = seq_reader

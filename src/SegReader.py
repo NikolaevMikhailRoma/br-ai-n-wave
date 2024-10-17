@@ -125,6 +125,29 @@ class SeqReader:
         # df.columns = ['TRACE_SEQUENCE_FILE', 'INLINE_3D', 'CROSSLINE_3D', 'CDP_X', 'CDP_Y']
         return df
 
+    # def _load_traces(self, traces_to_load: List[int]) -> np.ndarray:
+    #     """
+    #     Load specified traces from the SEG-Y file.
+    #
+    #     Args:
+    #         traces_to_load (List[int]): List of trace indices to load.
+    #
+    #     Returns:
+    #         np.ndarray: Array of loaded traces.
+    #     """
+    #     if self.segfast_file is None:
+    #         self.segfast_file = self._load_segfast_file()
+    #
+    #     loaded_traces = []
+    #     for trace in traces_to_load:
+    #         try:
+    #             loaded_trace = self.segfast_file.load_traces([trace], buffer=None)
+    #             loaded_traces.append(loaded_trace[0])
+    #         except OSError:
+    #             self.broken_traces.append(trace)
+    #     # return np.array(loaded_traces)
+    #     return np.array(loaded_traces).T
+
     def _load_traces(self, traces_to_load: List[int]) -> np.ndarray:
         """
         Load specified traces from the SEG-Y file.
@@ -138,15 +161,21 @@ class SeqReader:
         if self.segfast_file is None:
             self.segfast_file = self._load_segfast_file()
 
-        loaded_traces = []
-        for trace in traces_to_load:
-            try:
-                loaded_trace = self.segfast_file.load_traces([trace], buffer=None)
-                loaded_traces.append(loaded_trace[0])
-            except OSError:
-                self.broken_traces.append(trace)
-        # return np.array(loaded_traces)
-        return np.array(loaded_traces).T
+        try:
+            # Пытаемся загрузить все трассы сразу
+            loaded_traces = self.segfast_file.load_traces(traces_to_load, buffer=None)
+            return np.array(loaded_traces).T
+        except OSError:
+            # Если произошла ошибка, возвращаемся к загрузке по одной трассе
+            print("Error loading all traces at once. Falling back to loading traces one by one.")
+            loaded_traces = []
+            for trace in traces_to_load:
+                try:
+                    loaded_trace = self.segfast_file.load_traces([trace], buffer=None)
+                    loaded_traces.append(loaded_trace[0])
+                except OSError:
+                    self.broken_traces.append(trace)
+            return np.array(loaded_traces).T
 
     def _calculate_statistics(self) -> None:
         """
